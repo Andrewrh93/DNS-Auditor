@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Define the network range
+network="10.0.34"
+
+# Create a file to store the results
+touch results.txt
+
+# Loop through all possible IP addresses in the network
+for i in {1..254}
+do
+  # Create the full IP address
+  ip="$network.$i"
+
+  # Ping the IP address and check if it is online
+  ping -c 1 $ip > /dev/null 2>&1
+  if [ $? -eq 0 ]
+  then
+    echo "$ip is online"
+
+    # Check if port 22 is open on the online IP address
+    nc -z -w1 $ip 22 > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+      echo "Port 22 is open on $ip"
+	  echo "Port 22 is open on $ip" >> results.txt
+
+      # Perform a nslookup on the online IP address
+      hostname=$(nslookup $ip | grep "name =" | awk '{print $4}')
+      if [ -z "$hostname" ]
+      then
+        echo "No hostname found for $ip"
+        echo "$ip,No hostname found" >> results.txt
+      else
+        echo "Hostname for $ip is $hostname"
+        echo "$ip,$hostname" >> results.txt
+      fi
+    else
+      echo "Port 22 is closed on $ip"
+      echo "$ip,Port 22 closed" >> results.txt
+    fi
+  else
+    echo "$ip is offline"
+    echo "$ip,offline" >> results.txt
+	# Check if port 22 is open on the online IP address
+    nc -z -w1 $ip 22 > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+      echo "Port 22 is open on $ip"
+	  echo "Port 22 is open on $ip" >> results.txt
+
+      # Perform a nslookup on the online IP address
+      hostname=$(nslookup $ip | grep "name =" | awk '{print $4}')
+      if [ -z "$hostname" ]
+      then
+        echo "No hostname found for $ip"
+        echo "$ip,No hostname found" >> results.txt
+      else
+        echo "Hostname for $ip is $hostname"
+        echo "$ip,$hostname" >> results.txt
+      fi
+    else
+      echo "Port 22 is closed on $ip"
+      echo "$ip,Port 22 closed" >> results.txt
+    fi
+  fi
+done
